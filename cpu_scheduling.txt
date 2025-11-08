@@ -1,0 +1,81 @@
+ #include <iostream>
+ #include <algorithm>
+ using namespace std;
+ void simulateFCFS(int processCount, int burstTime[]) {
+    int waitingTime[20], turnaroundTime[20];
+    waitingTime[0] = 0;
+    for (int i = 1; i < processCount; i++)
+        waitingTime[i] = waitingTime[i-1] + burstTime[i-1];
+    int totalWT = 0, totalTAT = 0;
+    for (int i = 0; i < processCount; i++) {
+        turnaroundTime[i] = waitingTime[i] + burstTime[i];
+        totalWT += waitingTime[i];
+        totalTAT += turnaroundTime[i];
+    }
+    cout << "FCFS Avg WT: " << (float)totalWT / processCount << " Avg TAT: " << (float)totalTAT /
+ processCount << endl;
+ }
+ void simulateSJF(int processCount, int burstTime[]) {
+    int copyBurst[20];
+    for (int i = 0; i < processCount; i++) copyBurst[i] = burstTime[i];
+    for (int i = 0; i < processCount - 1; i++)
+        for (int j = i + 1; j < processCount; j++)
+            if (copyBurst[i] > copyBurst[j]) swap(copyBurst[i], copyBurst[j]);
+    int waitingTime[20], turnaroundTime[20];
+    waitingTime[0] = 0;
+    for (int i = 1; i < processCount; i++) waitingTime[i] = waitingTime[i-1] + copyBurst[i-1];
+    int totalWT = 0, totalTAT = 0;
+    for (int i = 0; i < processCount; i++) {
+        turnaroundTime[i] = waitingTime[i] + copyBurst[i];
+        totalWT += waitingTime[i];
+        totalTAT += turnaroundTime[i];
+    }
+    cout << "SJF Avg WT: " << (float)totalWT / processCount << " Avg TAT: " << (float)totalTAT /
+ processCount << endl;
+ }
+ void simulateRoundRobin(int processCount, int burstTime[], int timeQuantum) {
+    int remainingTime[20];
+    for (int i = 0; i < processCount; i++) remainingTime[i] = burstTime[i];
+    int waitingTime[20] = {0}, turnaroundTime[20];
+    int currentTime = 0;
+    bool done;
+    do {
+        done = true;
+        for (int i = 0; i < processCount; i++) {
+            if (remainingTime[i] > 0) {
+                done = false;
+                if (remainingTime[i] > timeQuantum) {
+                    currentTime += timeQuantum;
+                    remainingTime[i] -= timeQuantum;
+                } else {
+                    currentTime += remainingTime[i];
+                    waitingTime[i] = currentTime - burstTime[i];
+                    remainingTime[i] = 0;
+                }
+            }
+        }
+    } while (!done);
+    int totalWT = 0, totalTAT = 0;
+    for (int i = 0; i < processCount; i++) {
+        turnaroundTime[i] = burstTime[i] + waitingTime[i];
+        totalWT += waitingTime[i];
+        totalTAT += turnaroundTime[i];
+    }
+    cout << "RR Avg WT: " << (float)totalWT / processCount << " Avg TAT: " << (float)totalTAT /
+ processCount << endl;
+ }
+ int main() {
+    int n;
+    cout << "Enter number of processes: ";
+    cin >> n;
+    int burstTime[20];
+    cout << "Enter burst times: ";
+    for (int i = 0; i < n; i++) cin >> burstTime[i];
+    simulateFCFS(n, burstTime);
+    simulateSJF(n, burstTime);
+    int quantum;
+    cout << "Enter time quantum for RR: ";
+    cin >> quantum;
+    simulateRoundRobin(n, burstTime, quantum);
+}
+    return 0;

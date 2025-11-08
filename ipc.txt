@@ -1,0 +1,23 @@
+ #include <iostream>
+ #include <unistd.h>
+ #include <string.h>
+ using namespace std;
+ int main() {
+    int pipeEnds[2];
+    if (pipe(pipeEnds) == -1) { cout << "Pipe failed" << endl; return 1; }
+    pid_t processID = fork();
+    if (processID < 0) { cout << "Fork failed" << endl; return 1; }
+    if (processID == 0) {
+        close(pipeEnds[1]);
+        char buffer[100];
+        read(pipeEnds[0], buffer, sizeof(buffer));
+        cout << "Child received: " << buffer << endl;
+        close(pipeEnds[0]);
+    } else {
+        close(pipeEnds[0]);
+        const char message[] = "Message from parent";
+        write(pipeEnds[1], message, strlen(message)+1);
+        close(pipeEnds[1]);
+    }
+    return 0;
+ }

@@ -1,0 +1,60 @@
+ #include <iostream>
+ #include <cmath>
+ #include <algorithm>
+ using namespace std;
+ int totalHeadMovementFCFS(int requests[], int count, int head) {
+    int total = 0;
+    for (int i = 0; i < count; i++) { total += abs(requests[i] - head); head = requests[i]; }
+    return total;
+ }
+ int totalHeadMovementSSTF(int requests[], int count, int head) {
+    int done[50] = {0}, total = 0;
+    for (int c = 0; c < count; c++) {
+        int minDist = 1e9, index = -1;
+        for (int i = 0; i < count; i++) if (!done[i] && abs(requests[i] - head) < minDist) {
+ minDist = abs(requests[i]-head); index = i; }
+        done[index] = 1; total += minDist; head = requests[index];
+    }
+    return total;
+ }
+int totalHeadMovementSCAN(int requests[], int count, int head, int diskSize) {
+    int arr[60]; for (int i = 0; i < count; i++) arr[i] = requests[i];
+    sort(arr, arr+count);
+    int idx = 0; while (idx < count && arr[idx] < head) idx++;
+    int total = 0;
+    for (int i = idx; i < count; i++) { total += abs(arr[i] - head); head = arr[i]; }
+    if (idx > 0) { total += abs((diskSize-1) - head); head = diskSize-1; for (int i = idx-1; i >=
+ 0; i--) { total += abs(arr[i] - head); head = arr[i]; } }
+    return total;
+ }
+ int totalHeadMovementCSCAN(int requests[], int count, int head, int diskSize) {
+    int arr[60]; for (int i = 0; i < count; i++) arr[i] = requests[i];
+    sort(arr, arr+count);
+    int idx = 0; while (idx < count && arr[idx] < head) idx++;
+    int total = 0;
+    for (int i = idx; i < count; i++) { total += abs(arr[i] - head); head = arr[i]; }
+    if (idx > 0) { total += abs((diskSize-1) - head); total += (diskSize-1); head = arr[0]; for
+ (int i = 0; i < idx; i++) { total += abs(arr[i] - head); head = arr[i]; } }
+    return total;
+ }
+ int totalHeadMovementLOOK(int requests[], int count, int head) {
+    int arr[60]; for (int i = 0; i < count; i++) arr[i] = requests[i];
+    sort(arr, arr+count);
+    int idx = 0; while (idx < count && arr[idx] < head) idx++;
+    int total = 0;
+    for (int i = idx; i < count; i++) { total += abs(arr[i] - head); head = arr[i]; }
+    for (int i = idx-1; i >= 0; i--) { total += abs(arr[i] - head); head = arr[i]; }
+    return total;
+ }
+ int main() {
+    int n; cout << "Enter number of requests: "; cin >> n;
+    int requests[50]; for (int i = 0; i < n; i++) cin >> requests[i];
+    int head; cout << "Enter initial head position: "; cin >> head;
+    int diskSize = 200; // default
+    cout << "FCFS Movement: " << totalHeadMovementFCFS(requests, n, head) << endl;
+    cout << "SSTF Movement: " << totalHeadMovementSSTF(requests, n, head) << endl;
+    cout << "SCAN Movement: " << totalHeadMovementSCAN(requests, n, head, diskSize) << endl;
+    cout << "CSCAN Movement: " << totalHeadMovementCSCAN(requests, n, head, diskSize) << endl;
+    cout << "LOOK Movement: " << totalHeadMovementLOOK(requests, n, head) << endl;
+    return 0;
+ }
